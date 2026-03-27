@@ -101,7 +101,14 @@ function node_npm($cmd) {
 		echo "Node.js is not yet installed. <a href='?install'>Install it</a>.\n";
 		return;
 	}
-	$cmd = escapeshellcmd(NODE_DIR . "/bin/npm --cache ./.npm -- $cmd");
+	// Whitelist allowed npm subcommands to prevent arbitrary command execution
+	$allowed = array('install', 'uninstall', 'update', 'list', 'ls', 'outdated', 'init', 'version');
+	$parts = explode(' ', trim($cmd), 2);
+	if (!in_array($parts[0], $allowed)) {
+		echo "Error: npm subcommand not allowed.\n";
+		return;
+	}
+	$cmd = NODE_DIR . "/bin/npm --cache ./.npm -- " . escapeshellarg($cmd);
 	echo "Running: $cmd\n";
 	$ret = -1;
 	passthru($cmd, $ret);
